@@ -1,6 +1,6 @@
 ---
 name: supabase-storage-private-media
-description: How to store user photos and other private media in Supabase Storage. Covers private buckets created by migration with one policy per command, uploader-owned folder paths, read access tied to a live link that ends at once, short signed URL lifetimes, no update policy, registration bound to the scanned object version, metadata stripping, an admin-only evidence bucket, cleanup of never-registered uploads, and purges that delete objects before rows. Load when adding an upload, a bucket, a storage policy or a signed URL.
+description: How to store user photos and other private media in Supabase Storage. Covers private buckets created by migration with one policy per command, uploader-owned folder paths, read access tied to a live link that ends at once, short signed URL lifetimes, no update policy, issue once and consume once upload paths, registration bound to the scanned object version, metadata stripping, an admin-only evidence bucket, cleanup of never-registered uploads, and purges that delete objects before rows. Load when adding an upload, a bucket, a storage policy or a signed URL.
 ---
 
 # Supabase storage for private media
@@ -22,6 +22,7 @@ description: How to store user photos and other private media in Supabase Storag
 8. **Keep reported media in an evidence bucket with no member policy.** When a member reports a photo, copy it to a private evidence bucket that only the service role can reach. The report then holds its own copy, so the uploader removing the photo or deleting the account does not destroy the evidence. An admin reads it through the admin function with a short signed link.
 9. **Remove uploads that were never registered.** An upload that never reaches the registration step is an orphan. A worker deletes objects older than a set number of hours that no row names.
 10. **In a purge, delete the objects first, then the rows, and refuse to delete rows while objects remain.** If an object delete fails, the rows stay, and the next run finishes the job. Deleting rows first leaves photos with no row to find them by.
+11. **Issue, consume once, then check.** Record every upload path the server issues, with the account and an expiry. A registration accepts only a path that was issued to the same account, is not yet consumed and has not expired. It consumes the path when the check starts, whether the check passes or fails, and refuses any path that is already registered. Why: an "add photo" action accepted any existing object path in the account's folder. Pointing it at an already registered photo made the server's byte check delete that object.
 
 ## How to do it
 A private bucket and its three policies, in one migration or a declarative file:
@@ -67,6 +68,7 @@ The upload sequence:
 - **Symptom:** a former counterpart still sees a photo for a few minutes after the link ended. **Cause:** a signed link made earlier is still valid. **Fix:** keep the link lifetime to minutes, and clear the client's cache when the link ends.
 - **Symptom:** a photo changes after it was approved. **Cause:** the bucket allowed overwrites, or the registration did not bind to a version. **Fix:** no update policy, and a version check in the registration.
 - **Symptom:** a photo with a location is visible to others. **Cause:** metadata was not stripped on the device, and the server did not check. **Fix:** strip in the app and refuse on the server.
+- **Symptom:** an add photo call deleted a photo that was already registered. **Cause:** the registration accepted any object path in the account's folder, and the failed byte check deleted the object it was given. **Fix:** rule 11. Accept only issued, unconsumed, unexpired paths, consume on every outcome, and refuse registered paths. Keep deletes to objects that the upload flow itself issued.
 - **Symptom:** storage fills up with photos no row points to. **Cause:** uploads that never reached registration. **Fix:** the orphan sweep.
 - **Symptom:** a purge deleted rows, and some objects can no longer be found. **Cause:** rows were removed before objects. **Fix:** objects first, and a row delete that refuses while any object of the owner remains.
 - **Symptom:** a delete of a member's account fails halfway. **Cause:** a storage call failed and the rest ran. **Fix:** every step is a no-op when done, storage is cleared before the rows, and any storage error aborts the whole step so a retry can finish it.
@@ -81,12 +83,14 @@ The upload sequence:
 - [ ] Metadata is stripped on the device and refused on the server.
 - [ ] Reported media is copied to the evidence bucket.
 - [ ] An orphan sweep and a purge order (objects, then rows) exist.
+- [ ] Registration accepts only issued, unconsumed, unexpired paths for the same account, and refuses registered ones.
 
 ## Tests that prove it
 - Policy tests as the owner, as a live counterpart, as a former counterpart, as a stranger and as `anon`. The owner and the live counterpart read; the others get nothing.
 - An update attempt is refused.
 - A registration test that changes the object between the check and the read, and expects `busy_retry`.
 - A test that a file with metadata is refused and removed.
+- A test that registering an already registered path is refused, and that the registered object still exists afterwards. Also test an unissued path, a path issued to another account, an expired path, and a second use of an issued path.
 - A purge test that a failed object delete leaves the rows in place.
 - Upload-side details are in [media-upload-pipeline](../media-upload-pipeline/SKILL.md).
 
