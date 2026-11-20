@@ -1,6 +1,6 @@
 ---
 name: independent-review-before-deploy
-description: How to get an independent review of a change before it reaches a server that real testers use, especially when every push to the main branch deploys automatically. Covers what to give a fresh reviewer (code and intent, not your conclusion), asking whether a push is safe, what reviews actually caught in one project, requiring a failing scenario and the smallest fix for each finding, reviewers who do not edit, and keeping held changes out of commits with a clean worktree check. Load before pushing a change that auto deploys, or when asked to review.
+description: How to get an independent review of a change before it reaches a server that real testers use, especially when every push to the main branch deploys automatically. Covers what to give a fresh reviewer (code and intent, not your conclusion), briefing the reviewer on goals to break, keeping reviews on security sensitive tools even when tests pass, asking whether a push is safe, what reviews actually caught in one project, requiring a failing scenario and the smallest fix for each finding, reviewers who do not edit, and keeping held changes out of commits with a clean worktree check. Load before pushing a change that auto deploys, or when asked to review.
 ---
 
 # Independent review before deploy
@@ -24,6 +24,8 @@ description: How to get an independent review of a change before it reaches a se
    Why: a stash can take away another agent's work mid task, and a commit that only builds with a held change is broken for everyone who pulls it.
 6. **Review before the first tester sees a feature, not after.** Switch new features off until the review has passed (see the feature flags skill).
    Why: a review that finds a problem after a tester has used it leaves data the tester created, and a fix must handle that data.
+7. **Keep the review on security sensitive tools, even when your own tests are green.** An internal tool that acts on member data, a moderation path, or a tool that creates accounts or unlocks access gets a review before every deploy. Brief the reviewer on what to try to break, as a list of goals, not as a list of checks that pass.
+   Why: on one internal admin tool, each review before deploy found a real issue while the author's tests were green. The four were a moderation side door in an allowed action, an over broad link, a backlog sweep, and a permanent unban race.
 
 ## How to do it
 
@@ -35,6 +37,8 @@ Scope: <commit range or branch, and the files>
 Intent: <the spec or the decision it implements; link it>
 Ran: <each gate, with pass or fail and the output line that proves it>
 Not run: <anything that needs a device, a second account, or hosted data>
+Try to break: <goals, for example "reach moderation through an optional key of an
+  allowed action"; "make a responder act on work from before it was switched on">
 Ask: is it safe to push to the server testers use? For each finding give
   1. the failing scenario, step by step, with the data it needs
   2. the smallest change that fixes it
