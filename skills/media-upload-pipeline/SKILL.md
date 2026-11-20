@@ -77,6 +77,8 @@ const { data } = await supabase.storage.from(bucket).createSignedUrls(paths, ttl
 - **A photo survives the owner's removal.** Cause: a cached signed link or image in the device's cache. Fix: on removal or on the end of access, drop the query entries, the signed links and the just uploaded local files.
 - **A file passes after the download fails.** Cause: a fallback to "accept" on a storage error. Fix: a retryable error, and no registration.
 - **A file with a second image after the end marker.** The walk must stop at the end marker and refuse or cut what follows. A check that only reads the header misses it.
+- **Bundled sample photos fail the server's metadata check.** Cause: a sample image shipped with the app or the test fixtures still carried metadata segments, so the server refused it. Fix: strip every metadata segment from each bundled sample before it is committed, and run the same server check on the samples in tests. A sample that the server refuses is a fixture bug, not a server bug.
+- **A registration accepted a path nobody uploaded for that request.** Cause: the register call trusted any object name in the account's folder. Fix: issue and consume paths server side, as in [supabase-storage-private-media](../supabase-storage-private-media/SKILL.md) rule 11.
 - **A stray orphan upload.** An upload that is never registered stays in storage. Fix: a scheduled job removes uploads older than a set age (one day in this project's design).
 
 ## Checklist
