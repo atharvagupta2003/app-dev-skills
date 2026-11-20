@@ -1,6 +1,6 @@
 ---
 name: background-jobs-and-sweeps
-description: How to run scheduled work in Supabase without duplicates, starvation, time-zone mistakes or cross-feature failures. Covers a scheduler that only enqueues while a worker does the work, idempotent claims, set-based sweep steps with filters before the batch limit, resolving time zones once per zone, isolated step budgets, deadlines as columns, and suppressing reminders after an ending, a freeze or a long pause. Load when adding a cron job, a queue, a worker step, a reminder or any time-based behaviour.
+description: How to run scheduled work in Supabase without duplicates, starvation, time-zone mistakes or cross-feature failures. Covers a scheduler that only enqueues while a worker does the work, idempotent claims and unique constraints per stage, skip locked claims, set-based sweep steps with filters before the batch limit, resolving time zones once per zone, isolated step budgets, deadlines as columns, per account on-since boundaries for responders that act as users, daily caps by due day, and suppressing reminders after an ending, a freeze or a long pause. Load when adding a cron job, a queue, a worker step, a responder, a reminder or any time-based behaviour.
 ---
 
 # Background jobs and sweeps
@@ -22,6 +22,15 @@ description: How to run scheduled work in Supabase without duplicates, starvatio
 8. **Compute time-based behaviour in each user's own time zone, and use one agreed zone for shared boundaries.** A reminder fires at 6 pm on the member's day, in the member's zone. A boundary both people share, such as "the day's question changes at 4 am", uses one zone for both, so the two members see the same day. A member who has never set a zone uses the agreed default.
 9. **Skip stale reminders after a pause.** A reminder written before a freeze, or for a day that has passed, is dropped when the feature comes back. Otherwise a member gets three warnings at once, or a notice about last week.
 10. **Keep the kick, if you use one, empty and the key separate.** When `pg_cron` must wake a function over HTTP, send an empty body with a random secret stored in Vault. Never use the service role key for a wake-up call. The worker decides what to do from the database, not from the call.
+11. **Enforce "at most once per stage" with a unique constraint, not an application check.** Key the row on the task, the account and the stage. Keep the same idempotency key on every retry of that stage. Why: two workers that each check "not done yet" in code can both pass the check.
+12. **Claim tasks with `for update skip locked` and a fresh claim token.** Why: a worker that stalls must not finish a task that another worker has since claimed. (Standard pattern. The build's material records the rule, not an incident.)
+13. **Check the kill switch and the guard again when an action begins, not only when the task is found.** Why: a task queued before a switch was turned off would otherwise run after it.
+14. **Give "no backlog" an on-since boundary at both the global level and per account.** Why: with only a global boundary, turning on one account, or 1,500 accounts in bulk, makes the responder act on everything that was pending for them before. Each account's work starts at its own on-since.
+15. **Bound every bulk action by count per tick.** Why: a bulk switch-on spreads its work over several ticks instead of running in one.
+16. **Count daily caps by the day the action is due, not the day the task was created.** Why: a task created on one day and due the next would otherwise be counted against the wrong day.
+17. **A task released because the tick's deadline arrived does not consume a retry.** Why: otherwise a slow tick uses up the retries of tasks that did nothing wrong.
+18. **Isolate responder steps as in rule 5, and ship with caps per real user per day.** A responder that acts as a user is a volume risk. See [internal-console-act-as-test-accounts](../internal-console-act-as-test-accounts/SKILL.md) for the caps.
+19. **Keep scripted lines neutral.** Do not refer to who started the conversation, and do not react to content the script cannot see. Why: an effusive reply read badly directly after a user asked whether they were talking to a bot.
 
 ## How to do it
 A schedule that enqueues, and a sweep that claims and acts in one set-based pass:
@@ -77,6 +86,10 @@ from (select distinct time_zone as zone from public.members) z;
 - **Symptom:** a reminder cannot be sent at the member's local time. **Cause:** no time zone was stored for the member, and the one schedule ran in fixed UTC. **Fix:** store the member's zone, compute the local hour from it, and use the agreed default zone only when the member has none.
 - **Symptom:** a member who was first seen long ago gets several stale warnings at once. **Cause:** the sweep counted every missed interval. **Fix:** count only intervals after the member's real start, and drop reminders whose time has passed by more than a set number of hours.
 - **Symptom:** a feature turned back on sends reminders for things that fell due while it was paused. **Cause:** the rows were still waiting. **Fix:** before the sweep resumes, drop or mark the rows that fell due during the pause.
+- **Symptom:** turning on one account made a responder act on weeks of old pending work for it. **Cause:** the "no backlog" boundary existed only at the global level. **Fix:** an on-since boundary per account, as well as the global one. Bulk switch-on is bounded per tick.
+- **Symptom:** a slow tick used up the retries of tasks that were fine. **Cause:** a task released at the tick's deadline was counted as a failure. **Fix:** a deadline release does not consume a retry.
+- **Symptom:** a daily cap was hit early for tasks created the day before. **Cause:** the cap counted by the day the task was created. **Fix:** count by the day the action is due.
+- **Symptom:** a responder's reply reacted to content the script could not see, or referred to who started the chat. **Cause:** the scripted line was written as if the script could see the conversation. **Fix:** neutral lines only.
 - **Symptom:** the queue depth keeps growing and nothing is processed. **Cause:** the wake-up secret was never set, so the worker rejects every kick. Until setup runs, jobs queue and nothing drains them. **Fix:** a setup step that is safe to run twice, and a health view that shows queue depth, lag and dead letters.
 
 ## Checklist
@@ -98,6 +111,10 @@ from (select distinct time_zone as zone from public.members) z;
 - A time-zone test: two members in zones on either side of midnight get the reminder on their own day.
 - A pause test: a reminder older than the stale window is dropped.
 - A step-isolation test: one step raises, and the next step still runs.
+- A responder backlog test: an account with old pending work is switched on, and the first tick acts only on work due after its on-since. A bulk switch-on of many accounts acts only up to the per tick bound.
+- A retry test: a task released at the tick's deadline keeps its retry count.
+- A cap test: pin any random delay to zero, or inject the clock, so the test cannot cross local midnight.
+- A unique constraint test: insert the same task and stage twice, and expect one row.
 - Database assertions are in [pgtap-database-testing](../pgtap-database-testing/SKILL.md).
 
 ## Related skills
