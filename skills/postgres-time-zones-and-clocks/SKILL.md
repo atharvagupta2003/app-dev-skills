@@ -92,6 +92,7 @@ Run every database test file a second time with the session zone set to a non UT
 - The day boundary test in `examples/day-boundary.test.sql`, run under several session zones.
 - Replace one clock expression with `current_date` on purpose in a scratch branch, and confirm the day test fails at every hour.
 - A client test for a birthday or a day edge: the device message matches the server's refusal.
+- A daily cap test with any random delay pinned to zero, or with the clock injected. A cap test that sleeps a random time can cross local midnight partway through, so the cap is counted on two days and the test fails only at that hour. (One project's cap test failed this way.)
 
 ## Related skills
 - [pgtap-database-testing](../pgtap-database-testing/SKILL.md): the test file layout, transactions and settings.
