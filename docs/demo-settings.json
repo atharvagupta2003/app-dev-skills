@@ -1,0 +1,47 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      { "hooks": [ { "type": "command", "command": "perl -MTime::HiRes=time -e 'printf \"%.3f\", time' > \"$DEMO_MARKS/submit\"" } ] }
+    ],
+    "PostToolUse": [
+      { "matcher": "Bash", "hooks": [ { "type": "command", "command": "{ perl -MTime::HiRes=time -e 'printf \"%.3f \", time'; head -c 600 | tr '\\n' ' '; echo; } >> \"$DEMO_MARKS/tools.log\"" } ] }
+    ],
+    "Stop": [
+      { "hooks": [ { "type": "command", "command": "perl -MTime::HiRes=time -e 'printf \"%.3f\", time' > \"$DEMO_MARKS/stop\"" } ] }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Skill", "Read", "Edit", "Write", "Glob", "Grep",
+      "Read(//tmp/app-dev-skills/**)",
+      "Read(__PLUGIN_REAL__/**)",
+      "Bash(adb devices)",
+      "Bash(adb shell input tap *)",
+      "Bash(adb shell input text *)",
+      "Bash(adb shell uiautomator dump)",
+      "Bash(adb shell uiautomator dump *)",
+      "Bash(adb exec-out uiautomator dump *)",
+      "Bash(adb shell cat /sdcard/*.xml)",
+      "Bash(adb pull /sdcard/*.xml *)",
+      "Bash(adb exec-out screencap *)",
+      "Bash(adb shell screencap -p /sdcard/*.png)",
+      "Bash(adb pull /sdcard/*.png *)",
+      "Bash(adb shell dumpsys window *)",
+      "Bash(adb shell dumpsys input_method *)",
+      "Bash(adb shell wm size)",
+      "Bash(adb logcat -b crash -d*)",
+      "Bash(python3 *tap_by_text.py *)",
+      "Bash(cd *)", "Bash(echo *)", "Bash(sleep *)", "Bash(grep *)", "Bash(cat *)", "Bash(ls *)", "Bash(head *)", "Bash(tail *)"
+    ],
+    "deny": [
+      "Bash(adb uninstall *)", "Bash(adb install *)", "Bash(adb push *)", "Bash(adb root*)",
+      "Bash(adb reboot*)", "Bash(adb emu *)", "Bash(adb kill-server*)", "Bash(adb -s *)",
+      "Bash(adb shell pm *)", "Bash(adb shell am *)", "Bash(adb shell cmd *)",
+      "Bash(adb shell settings *)", "Bash(adb shell svc *)", "Bash(adb shell monkey *)",
+      "Bash(adb shell rm *)", "Bash(adb shell reboot*)", "Bash(adb shell wipe*)",
+      "Bash(adb shell input keyevent *)", "Bash(adb shell input swipe *)",
+      "Bash(adb shell input draganddrop *)", "Bash(adb shell input roll *)",
+      "Bash(npm *)", "Bash(npx *)", "Bash(curl *)", "Bash(rm *)", "Bash(git *)"
+    ]
+  }
+}
