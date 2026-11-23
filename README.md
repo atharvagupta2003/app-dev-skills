@@ -6,7 +6,7 @@ It is for developers using Claude Code (or another coding agent that reads markd
 
 ![Side by side: Claude Code is asked to test a note screen on an Android emulator like a real user, loads the android-emulator-real-user-testing skill, finds that the keyboard covers the Save button, fixes the screen, and confirms the fix with adb while the phone on the right responds.](docs/demo.gif)
 
-A real recording, not a mock up. On the left, Claude Code is asked to test a sample Expo note screen on an Android emulator like a real user. It loads the `android-emulator-real-user-testing` skill, taps and types with adb, finds by itself that the keyboard covers the Save button, fixes the screen, and checks that Save now sits above the keyboard and saves the note. On the right, the emulator responds to each step. Claude's closing summary also lists what it did not check. Record it again with `docs/record-demo.sh`.
+A real recording on the left, Claude Code is asked to test a sample Expo note screen on an Android emulator like a real user. It loads the `android-emulator-real-user-testing` skill, taps and types with adb, finds by itself that the keyboard covers the Save button, fixes the screen, and checks that Save now sits above the keyboard and saves the note. On the right, the emulator responds to each step. Claude's closing summary also lists what it did not check. Record it again with `docs/record-demo.sh`.
 
 ## The stack these skills assume
 
