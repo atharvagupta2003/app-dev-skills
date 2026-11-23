@@ -56,4 +56,4 @@ One line per skill, grouped in four. Keep this in step with `skills/`: every fol
 | [honest-status-reporting](skills/honest-status-reporting/SKILL.md) | Verified, not run and inferred; gates with counts; push versus switch on; exact red team numbers; repeated-run counts for intermittent fixes; count differences checked against the working tree first; defects by severity; plain corrections. |
 | [milestone-loop-build-review-test](skills/milestone-loop-build-review-test/SKILL.md) | The milestone loop from spec to documents, with what each stage caught that the previous one missed. |
 
-Agent definitions that apply these skills are in [agents/](agents/README.md).
+Agent definitions that apply these skills are in [docs/agents.md](docs/agents.md).

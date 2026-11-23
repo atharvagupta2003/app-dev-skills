@@ -12,7 +12,9 @@ Thanks for helping. Contributions are new skills, corrections to existing skills
 
 - Each `skills/<name>/SKILL.md` has frontmatter with `name` (equal to the folder name) and `description`.
 - `INDEX.md` lists every skill folder exactly once, and every link resolves.
-- The counts in `README.md` match the folders.
+- The counts in `README.md` and `.claude-plugin/*.json` match the folders.
+- `claude plugin validate .` passes. Only agent definitions go in `agents/`; every `.md` there loads as an agent.
+- Bump `version` in both `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` for a release, so installed copies pick up the change.
 - Search your change for private strings (emails, ids, keys, absolute paths) before you open a pull request.
 
 ## Commits

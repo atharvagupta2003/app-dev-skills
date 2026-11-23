@@ -6,13 +6,13 @@ Claude Code subagent definitions that match the skills in this repository. Each 
 
 | Agent | Model | Tools | When to use |
 |---|---|---|---|
-| [mobile-ui-builder](mobile-ui-builder.md) | sonnet | Read, Edit, Write, Grep, Glob, Bash | Implement a screen, flow or component from an approved spec. |
-| [backend-architect](backend-architect.md) | opus | Read, Edit, Write, Grep, Glob, Bash | Schema, migrations, row level security, Edge Functions, locks and races. |
-| [mobile-qa](mobile-qa.md) | sonnet | Read, Edit, Write, Grep, Glob, Bash | Write and run unit, database and function tests and the gates; report honestly. |
-| [device-tester](device-tester.md) | sonnet | Read, Write, Grep, Glob, Bash | Drive a release build on an emulator like a real user; return a pass, fail, not run table. |
-| [independent-reviewer](independent-reviewer.md) | opus | Read, Grep, Glob | Review a diff before a deploy; failing scenarios and smallest fixes; never edits. |
-| [context-curator](context-curator.md) | haiku | Read, Edit, Write, Grep, Glob | Keep specs, decision records, the session log and open questions in step with the code. |
-| [skills-scribe](skills-scribe.md) | haiku | Read, Edit, Write, Grep, Glob | Record sanitised learnings into a skills repository. |
+| [mobile-ui-builder](../agents/mobile-ui-builder.md) | sonnet | Read, Edit, Write, Grep, Glob, Bash | Implement a screen, flow or component from an approved spec. |
+| [backend-architect](../agents/backend-architect.md) | opus | Read, Edit, Write, Grep, Glob, Bash | Schema, migrations, row level security, Edge Functions, locks and races. |
+| [mobile-qa](../agents/mobile-qa.md) | sonnet | Read, Edit, Write, Grep, Glob, Bash | Write and run unit, database and function tests and the gates; report honestly. |
+| [device-tester](../agents/device-tester.md) | sonnet | Read, Write, Grep, Glob, Bash | Drive a release build on an emulator like a real user; return a pass, fail, not run table. |
+| [independent-reviewer](../agents/independent-reviewer.md) | opus | Read, Grep, Glob | Review a diff before a deploy; failing scenarios and smallest fixes; never edits. |
+| [context-curator](../agents/context-curator.md) | haiku | Read, Edit, Write, Grep, Glob | Keep specs, decision records, the session log and open questions in step with the code. |
+| [skills-scribe](../agents/skills-scribe.md) | haiku | Read, Edit, Write, Grep, Glob | Record sanitised learnings into a skills repository. |
 
 Tools follow least privilege. The reviewer has no Bash and no edit tools, so give it the diff as a patch file or in the brief. The scribe and the curator have no Bash and cannot commit.
 

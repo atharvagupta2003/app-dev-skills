@@ -1,0 +1,23 @@
+{
+  "name": "app-dev-skills",
+  "version": "1.0.0",
+  "description": "34 skills and 7 subagents for building production mobile apps with Claude Code: Expo and React Native, Supabase and Postgres, testing and release gates, LLM features and an agent driven build loop.",
+  "author": {
+    "name": "The app-dev-skills authors",
+    "url": "https://github.com/atharvagupta2003"
+  },
+  "homepage": "https://github.com/atharvagupta2003/app-dev-skills",
+  "repository": "https://github.com/atharvagupta2003/app-dev-skills",
+  "license": "MIT",
+  "keywords": [
+    "expo",
+    "react-native",
+    "supabase",
+    "postgres",
+    "testing",
+    "maestro",
+    "llm",
+    "agents",
+    "mobile"
+  ]
+}

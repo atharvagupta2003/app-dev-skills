@@ -1,0 +1,19 @@
+{
+  "name": "app-dev-skills",
+  "owner": {
+    "name": "The app-dev-skills authors",
+    "url": "https://github.com/atharvagupta2003"
+  },
+  "metadata": {
+    "description": "Skills and subagents for building production mobile apps with Claude Code."
+  },
+  "plugins": [
+    {
+      "name": "app-dev-skills",
+      "source": "./",
+      "description": "34 skills and 7 subagents for Expo, React Native, Supabase, testing, release gates and LLM features.",
+      "version": "1.0.0",
+      "category": "development"
+    }
+  ]
+}
